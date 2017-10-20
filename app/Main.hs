@@ -7,7 +7,6 @@ data TermS = SymS Symbol
            | AppS TermS TermS
            deriving (Eq,Show,Read)
 
-
 data TermI = SymI Int
            | LamI TermI
            | AppI TermI TermI
@@ -19,16 +18,17 @@ data TermP = TermP TermS
             | Not TermP
             | And TermP TermP
             | Or TermP TermP
+            --
             | Pair TermP TermP
             | Fst TermP
             | Snd TermP
             deriving (Eq,Show,Read)
 
--- let
 sym x = SymS (Symbol x)
 lam x t = LamS (Symbol x) t
 app t1 t2 = AppS t1 t2
 
+-- (lam "x" $ app (lam "x" $ sym "x") (lam "x" $ lam "y" $ app (sym "y") (lam "y" $ sym "x")))
 toTermI :: TermS -> TermI
 toTermI term = toTermI' [] term
   where
@@ -44,18 +44,39 @@ getIndex a xs = getIndex' 0 xs
                        | otherwise = getIndex' (i + 1) xs
 
 betaI :: TermI -> Maybe TermI
-betaI = error "Implement me"
+betaI term = error "implement me"
+-- betaI term = betaI' term
+  -- where
+  -- betaI' (SymI x) = x
+  -- betaI' (LamI term) = LamI (betaI' term)
+  -- betaI' (AppI term1 term2) = betaI'' term1 term2
 
+-- betaI'' :: TermI -> TermI -> Maybe TermI
+-- betaI'' ((SymI x) (TermI term)) =
+-- betaI'' ((LamI term) (TermI term)) =
+
+--TermS example: (lam "x" $ app (lam "x" $ sym "x") (lam "x" $ lam "y" $ app (sym "y") (lam "y" $ sym "x")))
 toTermS :: TermP -> TermS
-toTermS = error "Implement me!"
+-- toTermS term = "toTermS"
+toTermS (Fst term) = app (toTermS term) (lam "t" $ lam "f" $ sym "t")
+toTermS (Snd term) = app (toTermS term) (lam "t" $ lam "f" $ sym "f")
+-- toTermS (Pair term)
+--
+toTermS (Boolean b) = if b then (lam "t" $ lam "f" $ sym "t") else (lam "t" $ lam "f" $ sym "f")
+-- toTermS (Iff b term1 term2) = lam
+-- toTermS (Not term) =
+-- toTermS (And term1 term2) =
+-- toTermS (Or term1 term2)
+--
+toTermS (TermP term) = term
+
 
 solve :: TermP -> Maybe TermI
-solve = error "Choose your variant"
-
+solve term = betaI $ toTermI $ toTermS term
 
 
 main :: IO ()
 main = do
   print "sem1"
---   -- s <- readLnStr
---   -- print $ solve s
+  -- s <- readLnStr
+  -- print $ solve s
