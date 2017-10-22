@@ -87,10 +87,10 @@ toTermS :: TermP -> TermS
 toTermS = error "Implement me!"
 
 solve :: TermP -> TermS
-solve = beta' . alpha . toTermS
+solve term = beta . alpha . toTermS term
 
 main :: IO ()
 main = do
   print "sem1"
-    --   -- s <- readLnStr
-    --   -- print $ solve s
+  -- s <- readLnStr
+  -- print $ solve s
