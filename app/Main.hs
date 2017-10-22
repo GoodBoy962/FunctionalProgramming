@@ -56,15 +56,22 @@ alpha = error "Implement me!"
 
 -- (1)
 -- один шаг редукции, если это возможно. Стратегия вычислений - полная, т.е. редуцируются все возможные редексы.
-beta :: TermS -> TermS
-beta (SymS x)       = SymS x
-beta (LamS x term)  = LamS x (beta term)
--- beta (AppS term1 term2) = apply (beta term1) (beta term2) -- полная редукция
-beta (AppS (LamS param term1) term2) = apply (beta (LamS param term1)) (beta term2)
-beta (AppS term1 term2) = AppS (beta term1) (beta term2)
+beta :: TermS -> Maybe TermS
+beta term = let reduced = beta' term
+            in if reduced == term
+              then Nothing
+              else Just reduced
+
+
+beta' :: TermS -> TermS
+beta' (SymS x)       = SymS x
+beta' (LamS x term)  = LamS x (beta' term)
+-- beta' (AppS term1 term2) = apply (beta' term1) (beta' term2) -- полная редукция
+beta' (AppS (LamS param term1) term2) = apply (beta' (LamS param term1)) (beta' term2)
+beta' (AppS term1 term2) = AppS (beta' term1) (beta' term2)
 
 apply :: TermS -> TermS -> TermS
-apply (LamS param term1) term2 = beta $ rename param term2 term1
+apply (LamS param term1) term2 = beta' $ rename param term2 term1
 apply term1 term2 = AppS term1 term2
 
 rename :: Symbol -> TermS -> TermS -> TermS
@@ -80,7 +87,7 @@ toTermS :: TermP -> TermS
 toTermS = error "Implement me!"
 
 solve :: TermP -> TermS
-solve = beta . alpha . toTermS
+solve = beta' . alpha . toTermS
 
 main :: IO ()
 main = do
