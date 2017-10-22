@@ -1,82 +1,89 @@
 module Main where
 
-newtype Symbol = Symbol { unSymbol :: String } deriving (Eq,Show,Read)
+newtype Symbol = Symbol { unSymbol :: String } deriving (Eq,Read)
 
-data TermS = SymS Symbol
-           | LamS Symbol TermS
-           | AppS TermS TermS
-           deriving (Eq,Show,Read)
+instance Show Symbol where
+  show (Symbol x) = show x
 
-data TermI = SymI Int
-           | LamI TermI
-           | AppI TermI TermI
-           deriving (Eq,Show,Read)
+data TermS =
+      SymS Symbol
+    | LamS Symbol TermS
+    | AppS TermS TermS
+    deriving (Eq,Read)
+
+instance Show TermS where
+    show (SymS x)       = "sym " ++ show x
+    show (LamS x term)  = "(lam " ++ (show x) ++ " $ " ++ (show term) ++ ")"
+    show (AppS term1 term2) = "app " ++ (show term1) ++ " " ++ (show term2)
 
 data TermP = TermP TermS
+            -- (3)
             | Boolean Bool
             | Iff Bool TermP TermP
             | Not TermP
             | And TermP TermP
             | Or TermP TermP
-            --
+            -- (4)
+            | Natural Int
+            | Plus TermP TermP
+            | Mult TermP TermP
+            -- (4*) +10%
+            | Minus TermP TermP
+            | Divide TermP TermP
+            -- (5*) +50%
+            | Y TermP
+            -- (5**) +50%
+            -- mutually recursive
+            -- (6)
             | Pair TermP TermP
             | Fst TermP
             | Snd TermP
+            -- (7)
+            | Cons TermP TermP
+            | IsNil TermP
+            | Head TermP
+            | Tail TermP
             deriving (Eq,Show,Read)
 
 sym x = SymS (Symbol x)
 lam x t = LamS (Symbol x) t
 app t1 t2 = AppS t1 t2
 
--- (lam "x" $ app (lam "x" $ sym "x") (lam "x" $ lam "y" $ app (sym "y") (lam "y" $ sym "x")))
-toTermI :: TermS -> TermI
-toTermI term = toTermI' [] term
-  where
-    toTermI' args (SymS x) = SymI (getIndex x args)
-    toTermI' args (LamS x term) = LamI (toTermI' ([x] ++ args) term)
-    toTermI' args (AppS term1 term2) = AppI (toTermI' args term1) (toTermI' args term2)
+-- (1)
+-- переименовать все переменные так, чтобы все они были разными.
+alpha :: TermS -> TermS
+alpha = error "Implement me!"
 
-getIndex :: (Eq a) => a -> [a] -> Int
-getIndex a xs = getIndex' 0 xs
-  where
-    getIndex' i [] = i
-    getIndex' i (x:xs) | a == x    = i
-                       | otherwise = getIndex' (i + 1) xs
+-- (1)
+-- один шаг редукции, если это возможно. Стратегия вычислений - полная, т.е. редуцируются все возможные редексы.
+beta :: TermS -> TermS
+beta (SymS x)       = SymS x
+beta (LamS x term)  = LamS x (beta term)
+-- beta (AppS term1 term2) = apply (beta term1) (beta term2) -- полная редукция
+beta (AppS (LamS param term1) term2) = apply (beta (LamS param term1)) (beta term2)
+beta (AppS term1 term2) = AppS (beta term1) (beta term2)
 
-betaI :: TermI -> Maybe TermI
-betaI term = error "implement me"
--- betaI term = betaI' term
-  -- where
-  -- betaI' (SymI x) = x
-  -- betaI' (LamI term) = LamI (betaI' term)
-  -- betaI' (AppI term1 term2) = betaI'' term1 term2
+apply :: TermS -> TermS -> TermS
+apply (LamS param term1) term2 = beta $ rename param term2 term1
+apply term1 term2 = AppS term1 term2
 
--- betaI'' :: TermI -> TermI -> Maybe TermI
--- betaI'' ((SymI x) (TermI term)) =
--- betaI'' ((LamI term) (TermI term)) =
+rename :: Symbol -> TermS -> TermS -> TermS
+rename param term1 term2 = rename' replace term2
+    where replace = \(SymS x) -> if x == param then term1 else (SymS x)
 
---TermS example: (lam "x" $ app (lam "x" $ sym "x") (lam "x" $ lam "y" $ app (sym "y") (lam "y" $ sym "x")))
+rename' :: (TermS -> TermS) -> TermS -> TermS
+rename' f (SymS x) = f (SymS x)
+rename' f (LamS x term) = LamS x (rename' f term)
+rename' f (AppS term1 term2) = AppS (rename' f term1) (rename' f term2)
+
 toTermS :: TermP -> TermS
--- toTermS term = "toTermS"
-toTermS (Fst term) = app (toTermS term) (lam "t" $ lam "f" $ sym "t")
-toTermS (Snd term) = app (toTermS term) (lam "t" $ lam "f" $ sym "f")
--- toTermS (Pair term)
---
-toTermS (Boolean b) = if b then (lam "t" $ lam "f" $ sym "t") else (lam "t" $ lam "f" $ sym "f")
--- toTermS (Iff b term1 term2) = lam
--- toTermS (Not term) =
--- toTermS (And term1 term2) =
--- toTermS (Or term1 term2)
---
-toTermS (TermP term) = term
+toTermS = error "Implement me!"
 
-
-solve :: TermP -> Maybe TermI
-solve term = betaI $ toTermI $ toTermS term
-
+solve :: TermP -> TermS
+solve = beta . alpha . toTermS
 
 main :: IO ()
 main = do
   print "sem1"
-  -- s <- readLnStr
-  -- print $ solve s
+    --   -- s <- readLnStr
+    --   -- print $ solve s
