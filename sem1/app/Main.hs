@@ -28,7 +28,8 @@ getUniqueSymbol (Symbol x) = unsafePerformIO (getUniqueSymbol' (Symbol x))
 getUniqueSymbol' :: Symbol -> IO Symbol
 getUniqueSymbol' (Symbol x) = do
     unique <- newUnique
-    let newSymbol = (Symbol ("arg" ++ show (hashUnique unique)))
+    -- let newSymbol = (Symbol ("arg" ++ show (hashUnique unique)))
+    let newSymbol = (Symbol (x ++ show (hashUnique unique)))
     return newSymbol
 
 -- (1.2)
