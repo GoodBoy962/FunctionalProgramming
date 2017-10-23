@@ -1,5 +1,8 @@
 module Main where
 
+import Data.Unique
+import System.IO.Unsafe (unsafePerformIO)
+
 newtype Symbol = Symbol { unSymbol :: String } deriving (Eq,Read)
 
 instance Show Symbol where
@@ -14,7 +17,7 @@ data TermS =
 instance Show TermS where
     show (SymS x)       = "sym " ++ show x
     show (LamS x term)  = "(lam " ++ (show x) ++ " $ " ++ (show term) ++ ")"
-    show (AppS term1 term2) = "app " ++ (show term1) ++ " " ++ (show term2)
+    show (AppS term1 term2) = "app (" ++ (show term1) ++ ") (" ++ (show term2) ++ ")"
 
 data TermP = TermP TermS
             -- (3)
@@ -52,7 +55,31 @@ app t1 t2 = AppS t1 t2
 -- (1)
 -- переименовать все переменные так, чтобы все они были разными.
 alpha :: TermS -> TermS
-alpha = error "Implement me!"
+alpha (SymS x) = SymS x
+alpha (AppS term1 term2) = AppS (alpha term1) (alpha term2)
+alpha (LamS x term) =
+  let newSymbol = (getUniqueSymbol x) in
+  LamS newSymbol (alpha' x newSymbol term)
+
+alpha' :: Symbol -> Symbol -> TermS -> TermS
+-- alpha' = error "Impl me!"
+alpha' toReplace replaceWith (SymS x)
+  | x == toReplace = (SymS replaceWith)
+  | otherwise = (SymS x)
+alpha' toReplace replaceWith (LamS x term) =
+  LamS x (alpha' toReplace replaceWith (alpha term))
+alpha' toReplace replaceWith (AppS term1 term2) =
+  AppS (alpha' toReplace replaceWith term1) (alpha' toReplace replaceWith term2)
+
+
+getUniqueSymbol :: Symbol -> Symbol
+getUniqueSymbol (Symbol x) = unsafePerformIO (getUniqueSymbol' (Symbol x))
+
+getUniqueSymbol' :: Symbol -> IO Symbol
+getUniqueSymbol' (Symbol x) = do
+  unique <- newUnique
+  let newSymbol = (Symbol ("x" ++ show (hashUnique unique)))
+  return newSymbol
 
 -- (1)
 -- один шаг редукции, если это возможно. Стратегия вычислений - полная, т.е. редуцируются все возможные редексы.
@@ -83,11 +110,29 @@ rename' f (SymS x) = f (SymS x)
 rename' f (LamS x term) = LamS x (rename' f term)
 rename' f (AppS term1 term2) = AppS (rename' f term1) (rename' f term2)
 
+--TermS example: (lam "x" $ app (lam "x" $ sym "x") (lam "x" $ lam "y" $ app (sym "y") (lam "y" $ sym "x")))
 toTermS :: TermP -> TermS
-toTermS = error "Implement me!"
+--pairs
+-- toTermS (Fst term) = app (toTermS term) (lam "t" $ lam "f" $ sym "t")
+-- toTermS (Snd term) = app (toTermS term) (lam "t" $ lam "f" $ sym "f")
+-- toTermS (Pair term)
+--list
+-- toTermS (Cons term1 term2) =
+toTermS (IsNil term) = lam "c" $ lam "n" $ sym "n"
+-- toTermS (Head term) =
+-- toTermS (Tail term) =
+--
+toTermS (Boolean b) = if b then (lam "t" $ lam "f" $ sym "t") else (lam "t" $ lam "f" $ sym "f")
+-- toTermS (Iff b term1 term2) = lam "b" $ lam "x" $ lam "y" $ (((toTermS(Boolean b)) (toTermS(term1))) (toTermS(term2)))
+-- toTermS (Not term) =
+-- toTermS (And term1 term2) =
+-- toTermS (Or term1 term2)
+--
+toTermS (TermP term) = term
 
-solve :: TermP -> TermS
-solve term = beta . alpha . toTermS term
+-- solve :: TermP -> TermS
+-- solve = beta . alpha . toTermS
+
 
 main :: IO ()
 main = do
