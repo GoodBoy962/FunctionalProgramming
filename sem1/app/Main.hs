@@ -2,34 +2,7 @@ module Main where
 
 import Term (Symbol (..), TermS (..), TermP (..), sym, lam, app)
 import AlphaConversion (alpha)
-
--- (1.2)
--- один шаг редукции, если это возможно. Стратегия вычислений - полная, т.е. редуцируются все возможные редексы.
-beta :: TermS -> Maybe TermS
-beta term = let reduced = beta' term
-    in if reduced == term
-    then Nothing
-    else Just reduced
-
-beta' :: TermS -> TermS
-beta' (SymS x)       = SymS x
-beta' (LamS x term)  = LamS x (beta' term)
--- beta' (AppS term1 term2) = apply (beta' term1) (beta' term2) -- полная редукция
-beta' (AppS (LamS param term1) term2) = apply (beta' (LamS param term1)) (beta' term2)
-beta' (AppS term1 term2) = AppS (beta' term1) (beta' term2)
-
-apply :: TermS -> TermS -> TermS
-apply (LamS param term1) term2 = beta' $ rename param term2 term1
-apply term1 term2 = AppS term1 term2
-
-rename :: Symbol -> TermS -> TermS -> TermS
-rename param term1 term2 = rename' replace term2
-    where replace = \(SymS x) -> if x == param then term1 else (SymS x)
-
-rename' :: (TermS -> TermS) -> TermS -> TermS
-rename' f (SymS x) = f (SymS x)
-rename' f (LamS x term) = LamS x (rename' f term)
-rename' f (AppS term1 term2) = AppS (rename' f term1) (rename' f term2)
+import BetaReduction (beta)
 
 -- (2)
 -- Custom constructors
@@ -49,12 +22,12 @@ fls = lam "t" $ lam "f" $ sym "f"
 -- tail'
 
 toTermS :: TermP -> TermS
--- list
+-- (2.1) list
 -- toTermS (Cons term1 term2) =
 toTermS (IsNil term) = lam "c" $ lam "n" $ sym "n"
 -- toTermS (Head term) =
 -- toTermS (Tail term) =
--- bool
+-- (2.2) bool
 toTermS (Boolean b) = if b then tru else fls
 -- toTermS (Not term) =
 -- toTermS (And term1 term2) =
@@ -63,6 +36,7 @@ toTermS (Boolean b) = if b then tru else fls
 toTermS (TermP term) = term
 
 -- solve :: TermP -> TermS
+-- solve :: TermP -> Maybe TermS
 -- solve term = beta $ alpha $ toTermS $ term
 
 main :: IO ()

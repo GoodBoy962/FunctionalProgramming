@@ -2,7 +2,7 @@ module AlphaConversion (alpha) where
 
 import Data.Unique
 import System.IO.Unsafe (unsafePerformIO)
-import Term (Symbol (..), TermS (..), TermP (..), sym, lam, app)
+import Term (Symbol (..), TermS (..))
 
 -- (1.1)
 -- Rename all veriables to make their names different
