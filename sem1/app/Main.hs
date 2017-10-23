@@ -59,7 +59,8 @@ alpha (SymS x) = SymS x
 alpha (AppS term1 term2) = AppS (alpha term1) (alpha term2)
 alpha (LamS x term) =
   let newSymbol = (getUniqueSymbol x) in
-  LamS newSymbol (alpha' x newSymbol term)
+  -- LamS newSymbol (alpha' x newSymbol term)
+  LamS newSymbol (alpha' x newSymbol (alpha term))
 
 alpha' :: Symbol -> Symbol -> TermS -> TermS
 -- alpha' = error "Impl me!"
@@ -67,7 +68,8 @@ alpha' toReplace replaceWith (SymS x)
   | x == toReplace = (SymS replaceWith)
   | otherwise = (SymS x)
 alpha' toReplace replaceWith (LamS x term) =
-  LamS x (alpha' toReplace replaceWith (alpha term))
+  -- LamS x (alpha' toReplace replaceWith (alpha term))
+  LamS x (alpha' toReplace replaceWith term)
 alpha' toReplace replaceWith (AppS term1 term2) =
   AppS (alpha' toReplace replaceWith term1) (alpha' toReplace replaceWith term2)
 
@@ -111,6 +113,10 @@ rename' f (LamS x term) = LamS x (rename' f term)
 rename' f (AppS term1 term2) = AppS (rename' f term1) (rename' f term2)
 
 --TermS example: (lam "x" $ app (lam "x" $ sym "x") (lam "x" $ lam "y" $ app (sym "y") (lam "y" $ sym "x")))
+
+tru = lam "t" $ lam "f" $ sym "t"
+fls = lam "t" $ lam "f" $ sym "f"
+
 toTermS :: TermP -> TermS
 --pairs
 -- toTermS (Fst term) = app (toTermS term) (lam "t" $ lam "f" $ sym "t")
@@ -122,7 +128,7 @@ toTermS (IsNil term) = lam "c" $ lam "n" $ sym "n"
 -- toTermS (Head term) =
 -- toTermS (Tail term) =
 --
-toTermS (Boolean b) = if b then (lam "t" $ lam "f" $ sym "t") else (lam "t" $ lam "f" $ sym "f")
+toTermS (Boolean b) = if b then tru else fls
 -- toTermS (Iff b term1 term2) = lam "b" $ lam "x" $ lam "y" $ (((toTermS(Boolean b)) (toTermS(term1))) (toTermS(term2)))
 -- toTermS (Not term) =
 -- toTermS (And term1 term2) =
