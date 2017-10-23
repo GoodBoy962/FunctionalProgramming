@@ -3,4 +3,4 @@
 #### Number in list 3 = 011
 1. Lambda with symbols
 2. boolean constants
-3. pairs
+3. list
