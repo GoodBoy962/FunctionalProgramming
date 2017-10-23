@@ -10,34 +10,34 @@ alpha :: TermS -> TermS
 alpha (SymS x) = SymS x
 alpha (AppS term1 term2) = AppS (alpha term1) (alpha term2)
 alpha (LamS x term) =
-  let newSymbol = (getUniqueSymbol x) in
-  LamS newSymbol (alpha' x newSymbol (alpha term))
+    let newSymbol = (getUniqueSymbol x) in
+    LamS newSymbol (alpha' x newSymbol (alpha term))
 
 alpha' :: Symbol -> Symbol -> TermS -> TermS
 alpha' toReplace replaceWith (SymS x)
-  | x == toReplace = (SymS replaceWith)
-  | otherwise = (SymS x)
+    | x == toReplace = (SymS replaceWith)
+    | otherwise = (SymS x)
 alpha' toReplace replaceWith (LamS x term) =
-  LamS x (alpha' toReplace replaceWith term)
+    LamS x (alpha' toReplace replaceWith term)
 alpha' toReplace replaceWith (AppS term1 term2) =
-  AppS (alpha' toReplace replaceWith term1) (alpha' toReplace replaceWith term2)
+    AppS (alpha' toReplace replaceWith term1) (alpha' toReplace replaceWith term2)
 
 getUniqueSymbol :: Symbol -> Symbol
 getUniqueSymbol (Symbol x) = unsafePerformIO (getUniqueSymbol' (Symbol x))
 
 getUniqueSymbol' :: Symbol -> IO Symbol
 getUniqueSymbol' (Symbol x) = do
-  unique <- newUnique
-  let newSymbol = (Symbol ("arg" ++ show (hashUnique unique)))
-  return newSymbol
+    unique <- newUnique
+    let newSymbol = (Symbol ("arg" ++ show (hashUnique unique)))
+    return newSymbol
 
 -- (1.2)
 -- один шаг редукции, если это возможно. Стратегия вычислений - полная, т.е. редуцируются все возможные редексы.
 beta :: TermS -> Maybe TermS
 beta term = let reduced = beta' term
-            in if reduced == term
-              then Nothing
-              else Just reduced
+    in if reduced == term
+    then Nothing
+    else Just reduced
 
 beta' :: TermS -> TermS
 beta' (SymS x)       = SymS x
@@ -65,12 +65,16 @@ rename' f (AppS term1 term2) = AppS (rename' f term1) (rename' f term2)
 -- bool
 tru = lam "t" $ lam "f" $ sym "t"
 fls = lam "t" $ lam "f" $ sym "f"
--- iff =
--- not' =
--- and' =
--- or' =
+-- iff b x y = lam b $ lam x $ lam y $ app (app (b) (x)) (y)
+-- not' b x y = lam b $ lam x $ lam y $ app (app (b) (y)) (x)
+-- or' b c t f = lam b $ lam c $ lam t $ lam f $ app (app (b) (t)) (app (app (c) (t)) (f))
+-- and' b c t f = lam b $ lam c $ lam t $ lam f $ app (app (b) (app (app (c) (t)) (f)) (f))) (f)
 -- (2.2)
 -- list
+-- cons
+-- isnil
+-- head'
+-- tail'
 
 toTermS :: TermP -> TermS
 -- list
@@ -87,7 +91,7 @@ toTermS (Boolean b) = if b then tru else fls
 toTermS (TermP term) = term
 
 -- solve :: TermP -> TermS
--- solve = beta . alpha . toTermS
+-- solve term = beta $ alpha $ toTermS $ term
 
 main :: IO ()
 main = do
