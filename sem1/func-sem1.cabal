@@ -1,8 +1,6 @@
 name:                func-sem1
 version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/githubuser/func-sem1#readme
+homepage:            https://github.com/GoodBoy962/FunctionalProgramming/sem1#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Alexander Pliskin
@@ -38,4 +36,4 @@ test-suite func-sem1-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/func-sem1
+  location: https://github.com/GoodBoy962/FunctionalProgramming/sem1

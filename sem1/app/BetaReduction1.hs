@@ -13,18 +13,24 @@ beta term = let reduced = beta' term
 beta' :: TermS -> TermS
 beta' (SymS x)       = SymS x
 beta' (LamS x term)  = LamS x (beta' term)
+-- beta' (AppS term1 term2) = apply (beta' term1) (beta' term2) -- полная редукция
 beta' (AppS (SymS x) term) = AppS (SymS x) (beta' term)
-beta' (AppS term1 term2) =
-  let modifiedTerm1 = beta' term1
+--
+-- beta' (AppS (LamS x term1) term2) = apply (beta' (LamS x term1)) (beta' term2)
+----mod
+beta' (AppS (LamS x term1) term2) =
+  let modifiedTerm1 = beta' (LamS x term1)
   in if modifiedTerm1 == term1
-    then let
-      modifiedTerm2 = (beta' term2)
-      in if modifiedTerm2 == term2
-        then apply term1 term2
-        else AppS term1 modifiedTerm2
-    else AppS modifiedTerm1 term2
+  then AppS (LamS x term1) (beta' term2)
+  -- else apply (beta' (LamS x term1)) (term2)
+  ------
+  else apply (LamS x term1) term2
+  ------
+----
+beta' (AppS term1 term2) = AppS (beta' term1) (beta' term2)
 
 apply :: TermS -> TermS -> TermS
+-- apply (LamS param term1) term2 = beta' $ rename param term2 term1
 apply (LamS param term1) term2 = rename param term2 term1
 apply term1 term2 = AppS term1 term2
 

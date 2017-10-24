@@ -35,9 +35,8 @@ toTermS (Boolean b) = if b then tru else fls
 --
 toTermS (TermP term) = term
 
--- solve :: TermP -> TermS
--- solve :: TermP -> Maybe TermS
--- solve term = beta $ alpha $ toTermS $ term
+solve :: TermP -> Maybe TermS
+solve = beta . alpha . toTermS
 
 main :: IO ()
 main = do
