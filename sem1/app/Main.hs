@@ -10,25 +10,27 @@ import BetaReduction (beta)
 -- bool
 tru = lam "t" $ lam "f" $ sym "t"
 fls = lam "t" $ lam "f" $ sym "f"
--- iff b x y = lam b $ lam x $ lam y $ app (app (b) (x)) (y)
+-- iff' b x y = lam b $ lam x $ lam y $ app (app (b) (x)) (y)
 -- not' b x y = lam b $ lam x $ lam y $ app (app (b) (y)) (x)
 -- or' b c t f = lam b $ lam c $ lam t $ lam f $ app (app (b) (t)) (app (app (c) (t)) (f))
 -- and' b c t f = lam b $ lam c $ lam t $ lam f $ app (app (b) (app (app (c) (t)) (f)) (f))) (f)
 -- (2.2)
--- list
--- cons
--- isnil
+-- list'
+-- cons'
+isNil' t = app (lam "c" $ lam "n" $ sym "n") (toTermS t)
 -- head'
 -- tail'
+termP p = TermP p
 
 toTermS :: TermP -> TermS
 -- (2.1) list
 -- toTermS (Cons term1 term2) =
-toTermS (IsNil term) = lam "c" $ lam "n" $ sym "n"
+toTermS (IsNil term) = isNil' term
 -- toTermS (Head term) =
 -- toTermS (Tail term) =
 -- (2.2) bool
 toTermS (Boolean b) = if b then tru else fls
+-- toTermS (Iff b term1 term2)
 -- toTermS (Not term) =
 -- toTermS (And term1 term2) =
 -- toTermS (Or term1 term2)

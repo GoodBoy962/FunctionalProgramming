@@ -16,6 +16,10 @@ instance Show TermS where
     show (LamS x term)  = "(lam " ++ (show x) ++ " $ " ++ (show term) ++ ")"
     show (AppS term1 term2) = "app (" ++ (show term1) ++ ") (" ++ (show term2) ++ ")"
 
+sym x = SymS (Symbol x)
+lam x t = LamS (Symbol x) t
+app t1 t2 = AppS t1 t2
+
 data TermP = TermP TermS
             -- (3)
             | Boolean Bool
@@ -44,7 +48,3 @@ data TermP = TermP TermS
             | Head TermP
             | Tail TermP
             deriving (Eq,Show,Read)
-
-sym x = SymS (Symbol x)
-lam x t = LamS (Symbol x) t
-app t1 t2 = AppS t1 t2
