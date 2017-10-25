@@ -4,17 +4,12 @@ import Term (Symbol (..), TermS (..), TermP (..), sym, lam, app)
 import AlphaConversion (alpha)
 import BetaReduction (beta)
 
--- (2)
--- Custom constructors
--- (2.1)
--- bool
 tru = lam "t" $ lam "f" $ sym "t"
 fls = lam "t" $ lam "f" $ sym "f"
--- iff' b x y = lam b $ lam x $ lam y $ app (app (b) (x)) (y)
--- not' b x y = lam b $ lam x $ lam y $ app (app (b) (y)) (x)
--- or' b c t f = lam b $ lam c $ lam t $ lam f $ app (app (b) (t)) (app (app (c) (t)) (f))
--- and' b c t f = lam b $ lam c $ lam t $ lam f $ app (app (b) (app (app (c) (t)) (f)) (f))) (f)
--- (2.2)
+iff' b x y = app (app (app (lam "b" $ lam "x" $ lam "y" $ app (app (sym "b") (sym "x")) (sym "y")) (b)) (x)) (y)
+not' x = lam "x" $ app (app (x) (fls)) (tru)
+or' x y = lam "x" $ lam "y" $ app (app (x) (tru)) (y)
+and' x y = lam "x" $ lam "y" $ app (app (x) (y)) (fls)
 -- list'
 -- cons'
 isNil' t = app (lam "c" $ lam "n" $ sym "n") (toTermS t)
@@ -30,10 +25,10 @@ toTermS (IsNil term) = isNil' term
 -- toTermS (Tail term) =
 -- (2.2) bool
 toTermS (Boolean b) = if b then tru else fls
--- toTermS (Iff b term1 term2)
--- toTermS (Not term) =
--- toTermS (And term1 term2) =
--- toTermS (Or term1 term2)
+toTermS (Iff b term1 term2) = iff' (toTermS (Boolean (b))) (toTermS term1) (toTermS term2)
+toTermS (Not term) = not' (toTermS term)
+toTermS (And term1 term2) = and' (toTermS term1) (toTermS term2)
+toTermS (Or term1 term2) = or' (toTermS term1) (toTermS term2)
 --
 toTermS (TermP term) = term
 
