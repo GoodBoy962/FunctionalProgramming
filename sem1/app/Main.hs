@@ -9,6 +9,6 @@ solve = beta . alpha . toTermS
 
 main :: IO ()
 main = do
-  print "sem1"
-  -- s <- readLnStr
-  -- print $ solve s
+  -- print "sem1"
+  s <- read <$> getLine
+  print $ solve s
