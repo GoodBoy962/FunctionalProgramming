@@ -53,24 +53,27 @@ iff' b x y = app (app (app (lam "b" $ lam "x" $ lam "y" $ app (app (sym "b") (sy
 not' x = lam "x" $ app (app (x) (fls)) (tru)
 or' x y = lam "x" $ lam "y" $ app (app (x) (tru)) (y)
 and' x y = lam "x" $ lam "y" $ app (app (x) (y)) (fls)
-
+--
 pair f s = lam "f" $ lam "s" $ lam "b" $ app (app (sym "b") (sym "f")) (sym "s")
 fst' t = lam "p" $ app (sym "p") tru
 snd' t = lam "p" $ app (sym "p") fls
-
+--
 nil' = pair tru tru
 cons' h t = app (app (lam "h" $ lam "t" $ pair fls (pair h t)) h) t
 isNil' t = fst' t
 head' z = app (lam "z" $ fst' (snd' (sym "z"))) z
 tail' z = app (lam "z" $ snd' (snd' (sym "z"))) z
-
+--
+omega = lam "x" $ app (sym "f") (app (sym "x") (sym "x"))
+y' t = app (lam "f" $ app omega omega) t
+--
 termP p = TermP p
 
 toTermS :: TermP -> TermS
 --
 toTermS (Boolean b) = if b then tru else fls
 toTermS (Iff b term1 term2) = iff' (toTermS b) (toTermS term1) (toTermS term2)
-toTermS (Not term) = not' (toTermS term)
+toTermS (Not term) = not' $ toTermS term
 toTermS (And term1 term2) = and' (toTermS term1) (toTermS term2)
 toTermS (Or term1 term2) = or' (toTermS term1) (toTermS term2)
 --
@@ -83,5 +86,7 @@ toTermS (Cons term1 term2) = cons' (toTermS term1) (toTermS term2)
 toTermS (IsNil term) = isNil' $ toTermS term
 toTermS (Head term) = head' $ toTermS term
 toTermS (Tail term) = tail' $ toTermS term
+--
+toTermS (Y term) = y' $ toTermS term
 --
 toTermS (TermP term) = term
