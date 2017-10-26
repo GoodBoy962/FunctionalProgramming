@@ -8,23 +8,11 @@ termP) where
 
 newtype Symbol = Symbol { unSymbol :: String } deriving (Eq,Read,Show)
 
-{-
-instance Show Symbol where
-  show (Symbol x) = show x
--}
-
 data TermS =
       SymS Symbol
     | LamS Symbol TermS
     | AppS TermS TermS
     deriving (Eq,Read,Show)
-
-{-
-instance Show TermS where
-    show (SymS x)       = "sym " ++ show x
-    show (LamS x term)  = "(lam " ++ (show x) ++ " $ " ++ (show term) ++ ")"
-    show (AppS term1 term2) = "app (" ++ (show term1) ++ ") (" ++ (show term2) ++ ")"
--}
 
 data TermI =
       SymI Int
