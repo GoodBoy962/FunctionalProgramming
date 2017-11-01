@@ -1,4 +1,4 @@
-module LambdaCalculus (alpha, beta) where
+module LambdaCalculus (alpha, beta, full) where
 
 import Data.Unique
 import System.IO.Unsafe (unsafePerformIO)
@@ -8,13 +8,13 @@ alpha :: TermS -> TermS
 alpha (SymS x) = SymS x
 alpha (AppS term1 term2) = AppS (alpha term1) (alpha term2)
 alpha (LamS x term) =
-    let newSymbol = (getUniqueSymbol x) in
+    let newSymbol = getUniqueSymbol x in
     LamS newSymbol (alpha' x newSymbol (alpha term))
 
 alpha' :: Symbol -> Symbol -> TermS -> TermS
 alpha' toReplace replaceWith (SymS x)
-    | x == toReplace = (SymS replaceWith)
-    | otherwise = (SymS x)
+    | x == toReplace = SymS replaceWith
+    | otherwise = SymS x
 alpha' toReplace replaceWith (LamS x term) =
     LamS x (alpha' toReplace replaceWith term)
 alpha' toReplace replaceWith (AppS term1 term2) =
@@ -26,7 +26,7 @@ getUniqueSymbol (Symbol x) = unsafePerformIO (getUniqueSymbol' (Symbol x))
 getUniqueSymbol' :: Symbol -> IO Symbol
 getUniqueSymbol' (Symbol x) = do
     unique <- newUnique
-    let newSymbol = (Symbol (x ++ show (hashUnique unique)))
+    let newSymbol = Symbol (x ++ show (hashUnique unique))
     return newSymbol
 
 beta :: TermS -> Maybe TermS
@@ -43,7 +43,7 @@ beta' (AppS term1 term2) =
   let modifiedTerm1 = beta' term1
   in if modifiedTerm1 == term1
     then let
-      modifiedTerm2 = (beta' term2)
+      modifiedTerm2 = beta' term2
       in if modifiedTerm2 == term2
         then apply term1 term2
         else AppS term1 modifiedTerm2
@@ -54,10 +54,19 @@ apply (LamS param term1) term2 = rename param term2 term1
 apply term1 term2 = AppS term1 term2
 
 rename :: Symbol -> TermS -> TermS -> TermS
-rename param term1 term2 = rename' replace term2
-    where replace = \(SymS x) -> if x == param then term1 else (SymS x)
+rename param term1 = rename' replace
+    where replace (SymS x) = if x == param then term1 else SymS x
 
 rename' :: (TermS -> TermS) -> TermS -> TermS
 rename' f (SymS x) = f (SymS x)
 rename' f (LamS x term) = LamS x (rename' f term)
 rename' f (AppS term1 term2) = AppS (rename' f term1) (rename' f term2)
+
+-- выполнять редукцию до конца (но не больше 10000 шагов из-за возможности зависания)
+full :: (TermS -> a) -> (a -> Maybe a) -> TermS -> a
+full a b term = lastUnf 10000 b (a term)
+  where lastUnf :: Int -> (a -> Maybe a) -> a -> a
+        lastUnf 0 _ x = x
+        lastUnf n f x = case f x of
+          Nothing -> x
+          Just y -> lastUnf (n-1) f y

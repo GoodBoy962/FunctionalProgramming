@@ -5,11 +5,10 @@ import Term (Symbol (..), TermS (..), TermP (..), TermI (..),
   tru, fls, iff', not', or', and',
   cons', head', isNil', tail', nil',
   termP)
-import LambdaCalculus (alpha, beta)
+import LambdaCalculus (alpha, beta, full)
 
-
-solve :: TermP -> Either (Maybe TermI) (Maybe TermS)
-solve = Right . beta . alpha . toTermS
+solve :: TermP -> Either TermI TermS
+solve = Right . full alpha beta . toTermS
 
 main :: IO ()
 main = do
