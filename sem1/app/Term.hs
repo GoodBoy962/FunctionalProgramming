@@ -1,10 +1,8 @@
 module Term (
 Symbol (..), TermS (..), TermI (..), TermP (..),
 sym, lam, app,
-toTermS,
-tru, fls, iff', not', or', and',
-cons', head', isNil', tail', nil',
-termP) where
+tru, fls,
+toTermS) where
 
 newtype Symbol = Symbol { unSymbol :: String } deriving (Eq,Read,Show)
 
@@ -21,8 +19,8 @@ data TermI =
     deriving (Eq,Show,Read)
 
 sym x = SymS (Symbol x)
-lam x t = LamS (Symbol x) t
-app t1 t2 = AppS t1 t2
+lam x = LamS (Symbol x)
+app = AppS
 
 data TermP =
               TermP TermS
@@ -49,44 +47,44 @@ data TermP =
 
 tru = lam "t" $ lam "f" $ sym "t"
 fls = lam "t" $ lam "f" $ sym "f"
-iff' b x y = app (app (app (lam "b" $ lam "x" $ lam "y" $ app (app (sym "b") (sym "x")) (sym "y")) (b)) (x)) (y)
-not' x = lam "x" $ app (app (x) (fls)) (tru)
-or' x y = lam "x" $ lam "y" $ app (app (x) (tru)) (y)
-and' x y = lam "x" $ lam "y" $ app (app (x) (y)) (fls)
---
-pair f s = lam "f" $ lam "s" $ lam "b" $ app (app (sym "b") (sym "f")) (sym "s")
-fst' t = lam "p" $ app (sym "p") tru
-snd' t = lam "p" $ app (sym "p") fls
---
-nil' = pair tru tru
-cons' h t = app (app (lam "h" $ lam "t" $ pair fls (pair h t)) h) t
-isNil' t = fst' t
-head' z = app (lam "z" $ fst' (snd' (sym "z"))) z
-tail' z = app (lam "z" $ snd' (snd' (sym "z"))) z
---
+-- iff b x y = app (app (app (lam "b" $ lam "x" $ lam "y" $ app (app (sym "b") (sym "x")) (sym "y")) (b)) (x)) (y)
+iff = lam "b" $ lam "t" $ lam "f" (app (app (sym "b") (sym "t")) (sym "f"))
+not_ = lam "x" $ app (app (sym "x") fls) tru
+and_ = lam "x" $ lam "y" (app (app (sym "x") (sym "y")) fls)
+or_ = lam "x" $ lam "y" $ app (app (sym "x") tru) (sym "y")
+
+pair = lam "f" $ lam "s" (lam "b" (app (app (sym "b") (sym "f")) (sym "s")))
+fst_ = lam "p" $ app (sym "p") tru
+snd_ = lam "p" $ app (sym "p") fls
+
+nil = lam "c" $ lam "n" $ sym "n"
+cons = lam "h" $ lam "t" $ lam "c" $ lam "n" $ app (app (sym "c") (sym "h")) (app (app (sym "t") (sym "c")) (sym "n"))
+isnil = lam "l" $ app (app (sym "l") (lam "h" (lam "t" fls))) tru
+head_ = lam "l" (app (app (sym "l") (lam "h" (lam "t" (sym "h")))) fls)
+tail_ = lam "l" (app fst_ (app (app (sym "l") (lam "x" (lam "p" (app (app pair (app snd_ (sym "p"))) (app (app cons (sym "x")) (app snd_ (sym "p"))))))) (app (app pair nil) nil)))
+
 omega = lam "x" $ app (sym "f") (app (sym "x") (sym "x"))
-y' t = app (lam "f" $ app omega omega) t
---
-termP p = TermP p
+y' = app (lam "f" $ app omega omega)
 
 toTermS :: TermP -> TermS
 --
-toTermS (Boolean b) = if b then tru else fls
-toTermS (Iff b term1 term2) = iff' (toTermS b) (toTermS term1) (toTermS term2)
-toTermS (Not term) = not' $ toTermS term
-toTermS (And term1 term2) = and' (toTermS term1) (toTermS term2)
-toTermS (Or term1 term2) = or' (toTermS term1) (toTermS term2)
+toTermS (TermP t) = t
 --
-toTermS (Pair term1 term2) = pair (toTermS term1) (toTermS term2)
-toTermS (Fst term) = fst' (toTermS term)
-toTermS (Snd term) = snd' (toTermS term)
+toTermS (Boolean True) = tru
+toTermS (Boolean False) = fls
+toTermS (Iff b x y) = app (app (app iff (toTermS b)) (toTermS x)) (toTermS y)
+toTermS (Not x) = app not_ (toTermS x)
+toTermS (And x y) = app (app and_ (toTermS x)) (toTermS y)
+toTermS (Or x y) = app (app or_ (toTermS x)) (toTermS y)
 --
-toTermS Nil = nil'
-toTermS (Cons term1 term2) = cons' (toTermS term1) (toTermS term2)
-toTermS (IsNil term) = isNil' $ toTermS term
-toTermS (Head term) = head' $ toTermS term
-toTermS (Tail term) = tail' $ toTermS term
+toTermS (Pair x y) = app (app pair (toTermS x)) (toTermS y)
+toTermS (Fst p) = app fst_ (toTermS p)
+toTermS (Snd p) = app snd_ (toTermS p)
 --
-toTermS (Y term) = y' $ toTermS term
+toTermS Nil = nil
+toTermS (Cons l t) = app (app cons (toTermS l)) (toTermS t)
+toTermS (IsNil l) = app isnil (toTermS l)
+toTermS (Head l) = app head_ (toTermS l)
+toTermS (Tail l) = app tail_ (toTermS l)
 --
-toTermS (TermP term) = term
+toTermS (Y t) = y' $ toTermS t
