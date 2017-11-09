@@ -1,7 +1,7 @@
 module Term (
 Symbol (..), TermS (..), TermI (..), TermP (..),
 sym, lam, app,
-tru, fls,
+tru, fls, factorial, natural,
 toTermS) where
 
 newtype Symbol = Symbol { unSymbol :: String } deriving (Eq,Read,Show)
@@ -63,8 +63,27 @@ isnil = lam "l" $ app (app (sym "l") (lam "h" (lam "t" fls))) tru
 head_ = lam "l" (app (app (sym "l") (lam "h" (lam "t" (sym "h")))) fls)
 tail_ = lam "l" (app fst_ (app (app (sym "l") (lam "x" (lam "p" (app (app pair (app snd_ (sym "p"))) (app (app cons (sym "x")) (app snd_ (sym "p"))))))) (app (app pair nil) nil)))
 
-omega = lam "x" $ app (sym "f") (app (sym "x") (sym "x"))
+omega = lam "x" $ app (sym "f") (lam "y" $ app (app (sym "x") (sym "x")) (sym "y"))
 y' = app (lam "f" $ app omega omega)
+
+natural n = lam "s" $ lam "z" $ numberToTermS n
+mult t1 t2 = app (app (lam "x" $ lam "y" $ lam "s" $ lam "z" $ app (app (sym "x") (app (sym "y") (sym "s"))) (sym "z")) (toTermS t1)) (toTermS t2)
+
+factorial = lam "fac" $ lam "n" $ iif' (isZero $ sym "n")
+    (natural 1)
+    (mult (TermP $ sym "n") (TermP $ app (sym "fac") (pred' (sym "n"))))
+
+iif' b x = app (app (app (lam "b" $ lam "x" $ lam "y" $ app (app (sym "b") (sym "x")) (sym "y")) b) x)
+
+pred' = app (lam "n" $ lam "s" $ lam "z" $ app (app (app (sym "n") (lam "g" $ lam "h" $ app (sym "h") (app (sym "g") (sym "s")))) (lam "u" $ sym "z")) (lam "u" $ sym "u"))
+isZero = app (lam "n" $ app
+    (app (sym "n") (lam "x" $ lam "t" $ lam "f" $ sym "f"))
+    (lam "t" $ lam "f" $ sym "t"))
+
+numberToTermS :: Int -> TermS
+numberToTermS n
+    | n == 0 = sym "z"
+    | otherwise = app (sym "s") (numberToTermS (n-1))
 
 toTermS :: TermP -> TermS
 --
