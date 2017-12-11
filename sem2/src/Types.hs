@@ -7,7 +7,11 @@ type Symbol = String
 
 data Term
   = Sym Symbol                  -- x
+<<<<<<< HEAD
   | Lam Symbol Type Term        -- \x -> t1 -> t2
+=======
+  | Lam Symbol Term             -- \x -> t
+>>>>>>> 030bea2f780e05abb31fbc4e1c88daeb68832de6
   | App Term Term               -- t1 t2
   --
   | Natural Int                 -- 5
@@ -39,3 +43,7 @@ data Type
   | PairT Type Type             -- (T1, T2)
   | List Type                   -- [T]
   deriving (Eq,Show,Read)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 030bea2f780e05abb31fbc4e1c88daeb68832de6

@@ -1,5 +1,6 @@
 module Solution where
 
+<<<<<<< HEAD
 import Data.Either
 import Types
 
@@ -127,6 +128,13 @@ extend xt env = xt : env
 
 -- Examples
 --
+=======
+import Types
+
+typeOf :: Term -> Either String Type
+typeOf = error "Implement me!"
+
+>>>>>>> 030bea2f780e05abb31fbc4e1c88daeb68832de6
 -- > typeOf $ Lam "x" $ Add (Sym "x") (Natural 5)
 -- Right (Fun Nat Nat)
 
@@ -141,3 +149,7 @@ extend xt env = xt : env
 
 -- > typeOf $ App (Lam "x" $ Boolean False) (Natural 5)
 -- Right Bool
+<<<<<<< HEAD
+=======
+
+>>>>>>> 030bea2f780e05abb31fbc4e1c88daeb68832de6
