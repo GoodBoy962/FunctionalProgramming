@@ -14,17 +14,17 @@ typeOf = typeOf' []
 
       Sym x -> lookup' x env
 
-      Lam x ty1 t -> case typeOf' (extend (x, ty1) env) t of
-        Right ty2 -> Right $ Fun ty1 ty2
-        _         -> Left "type mismatch in lambda"
+      Lam x t1Type t -> case typeOf' (extend (x, t1Type) env) t of
+        Right t2Type -> Right $ Fun t1Type t2Type
+        _            -> Left "type mismatch in lambda"
 
-      App t1 t2 -> case ty1 of
-        Right (Fun ty1' ty2') | Right ty1' == ty2 -> Right ty2'
-                              | otherwise -> Left "type mismatch in arguments of operator App"
+      App t1 t2 -> case t1Type of
+        Right (Fun t1Type' t2Type') | Right t1Type' == t2Type -> Right t2Type'
+                                    | otherwise               -> Left "type mismatch in arguments of operator App"
         _ -> Left "type mismatch in first term of application"
         where
-          ty1 = typeOf' env t1
-          ty2 = typeOf' env t2
+          t1Type = typeOf' env t1
+          t2Type = typeOf' env t2
       --
 
       -- Logical
@@ -123,7 +123,7 @@ lookup' x env = case lookup x env of
   Nothing -> Left $ "variable " ++ show x ++ " not in scope"
 
 extend :: (Symbol, Type) -> Env -> Env
-extend xt env = xt : env
+extend x env = x : env
 
 -- Examples
 --
