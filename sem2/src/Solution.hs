@@ -1,13 +1,12 @@
 module Solution where
 
-<<<<<<< HEAD
 import Data.Either
 import Types
 
 type Env = [(Symbol, Type)]
 
 typeOf :: Term -> Either String Type
-typeOf t = typeOf' [] t
+typeOf = typeOf' []
   where
     typeOf' env t = case t of
 
@@ -128,13 +127,6 @@ extend xt env = xt : env
 
 -- Examples
 --
-=======
-import Types
-
-typeOf :: Term -> Either String Type
-typeOf = error "Implement me!"
-
->>>>>>> 030bea2f780e05abb31fbc4e1c88daeb68832de6
 -- > typeOf $ Lam "x" $ Add (Sym "x") (Natural 5)
 -- Right (Fun Nat Nat)
 
@@ -149,7 +141,3 @@ typeOf = error "Implement me!"
 
 -- > typeOf $ App (Lam "x" $ Boolean False) (Natural 5)
 -- Right Bool
-<<<<<<< HEAD
-=======
-
->>>>>>> 030bea2f780e05abb31fbc4e1c88daeb68832de6
