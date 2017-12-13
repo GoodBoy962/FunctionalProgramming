@@ -7,7 +7,7 @@ type Symbol = String
 
 data Term
   = Sym Symbol                  -- x
-  | Lam Symbol Type Term        -- \x -> t1 -> t2
+  | Lam Symbol Type Term        -- \(x : T) -> t
   | App Term Term               -- t1 t2
   --
   | Natural Int                 -- 5
@@ -25,15 +25,14 @@ data Term
   | Snd Term                    -- snd t
   --
   | Cons Term Term              -- t1 : t2
-  | Nil                         -- []
+  | Nil Type                    -- [] :: [T]
   | IsNil Term                  -- null t
   | Head Term                   -- head t
   | Tail Term                   -- tail t
   deriving (Eq,Show,Read)
 
 data Type
-  = Base                        -- A
-  | Fun Type Type               -- T1 -> T2
+  = Fun Type Type               -- T1 -> T2
   | Nat                         -- N = {0,1,...}
   | Bool                        -- B = {False, True}
   | PairT Type Type             -- (T1, T2)

@@ -93,7 +93,7 @@ typeOf = typeOf' []
       --
 
       -- List
-      Nil -> Right $ List Base
+      Nil t -> Right $ List t
 
       IsNil t -> case typeOf' env t of
         Right (List _) -> Right Bool
@@ -109,8 +109,7 @@ typeOf = typeOf' []
 
       Cons t1 t2  -> case typeOf' env t2 of
         Right (List t2Type) -> case typeOf' env t1 of
-          (Right t1Type) | t2Type == Base   -> Right $ List t1Type
-                         | t1Type /= t2Type -> Left "first argument of Cons must have same type as the elements of the second argument"
+          (Right t1Type) | t1Type /= t2Type -> Left "first argument of Cons must have same type as the elements of the second argument"
                          | otherwise        -> Right $ List t1Type
           _ -> Left "first argument of Cons type mismatch"
         _ -> Left "second argument of Cons is not a list"
@@ -127,17 +126,26 @@ extend x env = x : env
 
 -- Examples
 --
--- > typeOf $ Lam "x" $ Add (Sym "x") (Natural 5)
+-- > typeOf $ Lam "x" Nat $ Add (Sym "x") (Natural 5)
 -- Right (Fun Nat Nat)
 
--- > typeOf $ Lam "x" $ Sym "x"
--- Right (Fun A A)
+-- > typeOf $ Lam "x" Bool $ Sym "x"
+-- Right (Fun Bool Bool)
 
 -- > typeOf $ Add (Natural 5) (Boolean False)
 -- Left "..."
 
--- > typeOf $ App (Lam "x" $ Sym "x") (Natural 5)
+-- > typeOf $ App (Lam "x" Nat $ Sym "x") (Natural 5)
 -- Right Nat
 
--- > typeOf $ App (Lam "x" $ Boolean False) (Natural 5)
+-- > typeOf $ App (Lam "x" Nat $ Boolean False) (Natural 5)
 -- Right Bool
+
+-- > typeOf $ App (Lam "x" Bool $ Boolean False) (Natural 5)
+-- Left "..."
+
+-- > typeOf $ Nil Nat
+-- Right (List Nat)
+
+-- > typeOf $ Cons (Natural 5) $ Cons (Boolean False) $ Nil Nat
+-- Left "..."
